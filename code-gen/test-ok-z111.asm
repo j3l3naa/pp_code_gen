@@ -18,12 +18,12 @@ main:
 @exit0:
 		MOV $1, -4(%14)
 @iterate1:
-		
-		ADDS	-4(%14),$1,-4(%14)
-		ADDS	-4(%14), $1, -4(%14)
 		CMPS	-4(%14), $5
-		JLES @iterate1
-@exititerate1:
+		JGTS @iterateexit1
+		ADDS	-4(%14),$1,-4(%14)
+		ADDS	-4(%14), $5, -4(%14)
+		JMP @iterate1
+@iterateexit1:
 		ADDS	-4(%14),y,%0
 		MOV 	%0,%13
 		JMP 	@main_exit

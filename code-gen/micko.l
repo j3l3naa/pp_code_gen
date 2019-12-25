@@ -36,8 +36,10 @@
 ";"                  { return _SEMICOLON; }
 "="                  { return _ASSIGN; }
 ":"                  { return _COLON; }
+
 "*"                  { yylval.i = MUL; return _MDROP; }
 "/"                  { yylval.i = DIV; return _MDROP; }
+
 "+"                  { yylval.i = ADD; return _AROP; }
 "-"                  { yylval.i = SUB; return _AROP; }
 "++"                 { return _PLUSPLUS; }

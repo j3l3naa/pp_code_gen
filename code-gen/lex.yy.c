@@ -972,96 +972,96 @@ YY_RULE_SETUP
 	YY_BREAK
 case 26:
 YY_RULE_SETUP
-#line 39 "micko.l"
+#line 40 "micko.l"
 { yylval.i = MUL; return _MDROP; }
 	YY_BREAK
 case 27:
 YY_RULE_SETUP
-#line 40 "micko.l"
+#line 41 "micko.l"
 { yylval.i = DIV; return _MDROP; }
 	YY_BREAK
 case 28:
 YY_RULE_SETUP
-#line 41 "micko.l"
+#line 43 "micko.l"
 { yylval.i = ADD; return _AROP; }
 	YY_BREAK
 case 29:
 YY_RULE_SETUP
-#line 42 "micko.l"
+#line 44 "micko.l"
 { yylval.i = SUB; return _AROP; }
 	YY_BREAK
 case 30:
 YY_RULE_SETUP
-#line 43 "micko.l"
+#line 45 "micko.l"
 { return _PLUSPLUS; }
 	YY_BREAK
 case 31:
 YY_RULE_SETUP
-#line 44 "micko.l"
+#line 46 "micko.l"
 { yylval.i = LT; return _RELOP; }
 	YY_BREAK
 case 32:
 YY_RULE_SETUP
-#line 45 "micko.l"
+#line 47 "micko.l"
 { yylval.i = GT; return _RELOP; }
 	YY_BREAK
 case 33:
 YY_RULE_SETUP
-#line 46 "micko.l"
+#line 48 "micko.l"
 { yylval.i = LE; return _RELOP; }
 	YY_BREAK
 case 34:
 YY_RULE_SETUP
-#line 47 "micko.l"
+#line 49 "micko.l"
 { yylval.i = GE; return _RELOP; }
 	YY_BREAK
 case 35:
 YY_RULE_SETUP
-#line 48 "micko.l"
+#line 50 "micko.l"
 { yylval.i = EQ; return _RELOP; }
 	YY_BREAK
 case 36:
 YY_RULE_SETUP
-#line 49 "micko.l"
+#line 51 "micko.l"
 { yylval.i = NE; return _RELOP; }
 	YY_BREAK
 case 37:
 YY_RULE_SETUP
-#line 50 "micko.l"
+#line 52 "micko.l"
 { return _QMARK; }
 	YY_BREAK
 case 38:
 YY_RULE_SETUP
-#line 51 "micko.l"
+#line 53 "micko.l"
 { yylval.s = strdup(yytext);
                        return _ID; }
 	YY_BREAK
 case 39:
 YY_RULE_SETUP
-#line 53 "micko.l"
+#line 55 "micko.l"
 { yylval.s = strdup(yytext);
                        return _INT_NUMBER;}
 	YY_BREAK
 case 40:
 YY_RULE_SETUP
-#line 55 "micko.l"
+#line 57 "micko.l"
 { yylval.s = strdup(yytext);
                        yylval.s[yyleng-1] = 0;
                        return _UINT_NUMBER;}
 	YY_BREAK
 case 41:
 YY_RULE_SETUP
-#line 59 "micko.l"
+#line 61 "micko.l"
 { /* skip */ }
 	YY_BREAK
 case 42:
 YY_RULE_SETUP
-#line 60 "micko.l"
+#line 62 "micko.l"
 { printf("line %d: LEXICAL ERROR on char %c\n", yylineno, *yytext);}
 	YY_BREAK
 case 43:
 YY_RULE_SETUP
-#line 61 "micko.l"
+#line 63 "micko.l"
 ECHO;
 	YY_BREAK
 #line 1068 "lex.yy.c"
@@ -2081,6 +2081,6 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 61 "micko.l"
+#line 63 "micko.l"
 
 

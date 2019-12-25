@@ -1,11 +1,9 @@
-//OPIS: 'f' undeclared
-//OPIS: incompatible types in iterating_statement
-
+//OPIS: inkrement u numexp-u
+//RETURN: 12
 int y;
 
 int main() {
     int x;
-    int i;
     x = 2;
     y = 6;
 
@@ -16,8 +14,9 @@ int main() {
     if(x < y++)
       x = 0;
 
-    iterate f step 1 to 5
-      x++;
+    for (int i = 0; i < 5; i++) {
+        y++;
+    }
 
     return x + y;
 }

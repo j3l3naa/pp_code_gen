@@ -25,6 +25,7 @@
   int case_var;
   int case_lit[100];
   int case_num = 0;
+  int lvl = 0;
 
 %}
 
@@ -185,6 +186,7 @@ statement
   | do_while_statement
   | basic_for
   | iterating_statement
+  | for_with_def
   ;
 
 compound_statement
@@ -219,58 +221,47 @@ iterating_statement
       int idx = lookup_symbol($2, VAR|PAR|GLOB);
       if (idx == NO_INDEX)
         err("'%s' undeclared", $2);
-
-      lab_num++;
-      $<i>$ = lab_num;
       code("\n\t\tMOV $1, ");
       gen_sym_name(idx);
+
+      lab_num++;
       code("\n@iterate%d:", lab_num);
-      code("\n\t\t");
-
-
+      $<i>$ = lab_num;
     }
 
   _STEP literal _TO literal
     {
+
       int idx = lookup_symbol($2, VAR|PAR|GLOB);
-      if(idx != NO_INDEX)
-      {
-      if(get_type($5) != get_type($7) || get_type($5) != get_type(idx))
-        err("incompatible types in iterating_statement");
-      }
+      if (get_type(idx) != get_type($5) || get_type(idx) != get_type($7))
+        err("incompatible types");
+      if (get_type(idx) == INT)
+        code("\n\t\tCMPS\t");
+      else
+        code("\n\t\tCMPU\t");
+      gen_sym_name(idx);
+      code(", ");
+      gen_sym_name($7);
+      code("\n\t\tJGTS @iterateexit%d", $<i>3);
     }
-   statement
+
+  statement
     {
+
       int idx = lookup_symbol($2, VAR|PAR|GLOB);
-      if (idx != NO_INDEX)
-      {
-      code("\n\t\t%s\t", ar_instructions[ADD + (get_type(idx) -1 )*AROP_NUMBER]);
+      if(get_type(idx) == INT)
+        code("\n\t\tADDS\t");
+      else
+        code("\n\t\tADDU\t");
       gen_sym_name(idx);
-      code(", $%d, ", atoi(get_name($5)));
+      code(", $%d, ", atoi(get_name($7)));
       gen_sym_name(idx);
+      code("\n\t\tJMP @iterate%d", $<i>3);
 
-      if(get_type($5) == INT)
-        {
-          code("\n\t\tCMPS\t");
-          gen_sym_name(idx);
-          code(", ");
-          gen_sym_name($7);
-          code("\n\t\tJLES @iterate%d", $<i>3);
-        }
-        else {
-          code("\n\t\tCMPU\t");
-          gen_sym_name(idx);
-          code(", ");
-          gen_sym_name($7);
-          code("\n\t\tJLES @iterate%d", $<i>3);
-        }
+      code("\n@iterateexit%d:", $<i>3);
 
-      code("\n@exititerate%d:", $<i>3);
-    }
     }
   ;
-
-
 postincrement_statement
   : _ID _PLUSPLUS _SEMICOLON
     {
@@ -404,7 +395,7 @@ basic_for
     {
       int idx = lookup_symbol($2, VAR|PAR|GLOB);
       if ($6 == 1)
-      
+
       {
         code("\n\t\t%s\t", ar_instructions[ADD + (get_type(idx) - 1) * AROP_NUMBER]);
         gen_sym_name(idx);
@@ -488,6 +479,57 @@ literal
 
   | _UINT_NUMBER
       { $$ = insert_literal($1, UINT); }
+  ;
+
+for_with_def
+  : _FOR _LPAREN _TYPE _ID _ASSIGN literal
+    {
+      int idx = lookup_symbol($4, VAR|PAR|GLOB);
+      if ($3 != get_type($6))
+        err("incompatible types in for with def");
+      lvl++;
+      if (idx == NO_INDEX)
+        {
+          idx = insert_symbol($4, VAR, $3, ++var_num, lvl);
+        }
+      else if(get_atr2(idx) != lvl)
+        idx = insert_symbol($4, VAR, $3, ++var_num, lvl);
+      else
+        {
+        err("already defined");
+        lvl = 0;
+        }
+        $<i>$ = idx;
+        gen_mov($6, idx);
+        code("\n@fordef%d:", idx);
+
+    }
+
+   _SEMICOLON rel_exp
+      {
+        code("\n\t\t%s @fordefexit%d", opp_jumps[$9], $<i>7);
+      }
+
+    _SEMICOLON _ID _PLUSPLUS _RPAREN
+      {
+        int idx1 = lookup_symbol($12, VAR|PAR|GLOB);
+        int idx2 = lookup_symbol($4, VAR|PAR|GLOB);
+        if (idx1 != idx2)
+          err("not the same variable");
+
+        code("\n\t\t%s\t", ar_instructions[ADD + (get_type(idx1) - 1) * AROP_NUMBER]);
+        gen_sym_name(idx1);
+        code(", $1, ");
+        gen_sym_name(idx1);
+
+      }
+    statement
+    {
+      code("\n\t\tJMP @fordef%d", $<i>7);
+
+      code("\n@fordefexit%d:", $<i>7);
+      clear_symbols($<i>7);
+    }
   ;
 
 function_call
