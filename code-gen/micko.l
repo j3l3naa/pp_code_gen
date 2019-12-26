@@ -29,6 +29,8 @@
 "iterate"            { return _ITERATE; }
 "in range"           { return _INRANGE; }
 ","                  { return _COMMA; }
+"petljaj"            { return _PETLJAJ; }
+"u opsegu"           { return _UOPSEGU; }
 
 "("                  { return _LPAREN; }
 ")"                  { return _RPAREN; }

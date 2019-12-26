@@ -1,6 +1,5 @@
-// for in range
-// RETURN 1
-
+//OPIS: for in range
+//RETURN: 2
 int main()
 {
   int x;
@@ -9,5 +8,5 @@ int main()
   for x in range (5, 1, 3)
     y++;
 
-  return x;
+  return y;
 }

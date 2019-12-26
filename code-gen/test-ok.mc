@@ -1,5 +1,5 @@
-// Opis: Prioriteti
-// RETURN 14
+//Opis: Prioriteti
+//RETURN: 14
 
 int main()
 {

@@ -61,6 +61,8 @@
 %token _ITERATE
 %token _INRANGE
 %token _COMMA
+%token _PETLJAJ _UOPSEGU
+
 
 %type <i> num_exp exp literal
 %type <i> function_call argument rel_exp if_part conditional_operator stmt direction maybe_step maybe_lit
@@ -190,6 +192,7 @@ statement
   | iterating_statement
   | for_with_def
   | for_in_range
+  | petljaj
   ;
 
 compound_statement
@@ -216,6 +219,88 @@ assignment_statement
         var_num_to_inc = 0;
         gen_mov($3, idx);
       }
+  ;
+
+petljaj
+  : _PETLJAJ _ID
+    {
+      int idx = lookup_symbol($2, VAR|PAR|GLOB);
+      if (idx == NO_INDEX)
+        err("'%s' undeclared", $2);
+    }
+
+   _UOPSEGU literal _COMMA literal
+    {
+      int idx = lookup_symbol($2, VAR|PAR|GLOB);
+      if (get_type(idx) != get_type($5) || get_type(idx) != get_type($7))
+        err("incompatible types in petljaj");
+      gen_mov($5, idx);
+      code("\n@petljaj%d:", ++lab_num);
+      $<i>$ = lab_num;
+
+      if (atoi(get_name($5)) < atoi(get_name($7)))
+        {
+          if(get_type(idx) == INT)
+            {
+              code("\nCMPS\t");
+            }
+          else
+            code("\nCMPU\t");
+          gen_sym_name(idx);
+          code(", ");
+          gen_sym_name($7);
+          code("\nJGTS\t@petljaj_exit%d", lab_num);
+
+        }
+        else {
+        if(get_type(idx) == INT)
+          {
+            code("\n\t\tCMPS\t");
+          }
+        else
+          code("\n\t\tCMPU\t");
+        gen_sym_name(idx);
+        code(", ");
+        gen_sym_name($7);
+        code("\n\t\tJLTS\t@petljaj_exit%d", lab_num);
+        }
+    }
+   statement
+    {
+      int idx = lookup_symbol($2, VAR|PAR|GLOB);
+
+      if (atoi(get_name($5)) < atoi(get_name($7)))
+      {
+        if (get_type(idx) == INT)
+          {
+            code("\n\t\tADDS\t");
+          }
+        else
+          {
+            code("\n\t\tADDU\t");
+          }
+        gen_sym_name(idx);
+        code(", $1, ");
+        gen_sym_name(idx);
+      }
+      else
+        {
+
+          if (get_type(idx) == INT)
+            {
+              code("\n\t\tSUBS\t");
+            }
+          else
+            {
+              code("\n\t\tSUBU\t");
+            }
+          gen_sym_name(idx);
+          code(", $1, ");
+          gen_sym_name(idx);
+        }
+        code("\n\t\tJMP @petljaj%d", $<i>8);
+        code("\n@petljaj_exit%d:", $<i>8);
+    }
   ;
 
 iterating_statement
@@ -292,9 +377,9 @@ for_in_range
       gen_sym_name(idx);
 
       if(atoi(get_name($6)) < atoi(get_name($8)))
-        code("\n\t\tJGTS @for_in_range_exit%d", lab_num);
-      else
         code("\n\t\tJLTS @for_in_range_exit%d", lab_num);
+      else
+        code("\n\t\tJGTS @for_in_range_exit%d", lab_num);
 
       $<i>$ = lab_num;
     }
@@ -329,14 +414,14 @@ for_in_range
             {
               code("\n\t\t%s\t", ar_instructions[ADD + (get_type(idx) - 1) * AROP_NUMBER]);
               gen_sym_name(idx);
-              code(", $%d, ", atoi(get_name($10)));
+              code(", $%d, ", $10);
               gen_sym_name(idx);
             }
             else
             {
               code("\n\t\t%s\t", ar_instructions[SUB + (get_type(idx) - 1) * AROP_NUMBER]);
               gen_sym_name(idx);
-              code(", $%d, ", atoi(get_name($10)));
+              code(", $%d, ", $10);
               gen_sym_name(idx);
             }
           }
