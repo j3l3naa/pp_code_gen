@@ -15,8 +15,8 @@ int main() {
       x = 0;
 
     for (int i = 0; i < 5; i++) {
-        y++;
+      for(int j = 1; j < 2; j++)
+          y++;
     }
-
     return x + y;
 }

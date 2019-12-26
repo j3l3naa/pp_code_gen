@@ -80,7 +80,9 @@ extern int yydebug;
     _STEP = 286,
     _NEXT = 287,
     _ITERATE = 288,
-    ONLY_IF = 289
+    _INRANGE = 289,
+    _COMMA = 290,
+    ONLY_IF = 291
   };
 #endif
 
@@ -94,7 +96,7 @@ union YYSTYPE
   int i;
   char *s;
 
-#line 98 "micko.tab.h" /* yacc.c:1921  */
+#line 100 "micko.tab.h" /* yacc.c:1921  */
 };
 
 typedef union YYSTYPE YYSTYPE;

@@ -59,9 +59,11 @@
 %token _DO
 %token _TO _DOWNTO _STEP _NEXT
 %token _ITERATE
+%token _INRANGE
+%token _COMMA
 
 %type <i> num_exp exp literal
-%type <i> function_call argument rel_exp if_part conditional_operator stmt direction maybe_step
+%type <i> function_call argument rel_exp if_part conditional_operator stmt direction maybe_step maybe_lit
 
 %nonassoc ONLY_IF
 %nonassoc _ELSE
@@ -187,6 +189,7 @@ statement
   | basic_for
   | iterating_statement
   | for_with_def
+  | for_in_range
   ;
 
 compound_statement
@@ -261,6 +264,97 @@ iterating_statement
       code("\n@iterateexit%d:", $<i>3);
 
     }
+  ;
+
+for_in_range
+  : _FOR _ID
+      {
+        int idx = lookup_symbol($2,VAR|PAR|GLOB);
+        if (idx == NO_INDEX)
+          err("'%s' undeclared", $2);
+
+      }
+
+  _INRANGE _LPAREN literal _COMMA literal
+    {
+      int idx = lookup_symbol($2,VAR|PAR|GLOB);
+      if (get_type($6) != get_type(idx) || get_type($8) != get_type(idx))
+        err("incompatible types in for in range");
+      gen_mov($6, idx);
+      lab_num++;
+      code("\n@for_in_range%d:", lab_num);
+      if(get_type(idx) == INT)
+          code("\n\t\tCMPS\t");
+      else
+          code("\n\t\tCMPU\t");
+      gen_sym_name($8);
+      code(", ");
+      gen_sym_name(idx);
+
+      if(atoi(get_name($6)) < atoi(get_name($8)))
+        code("\n\t\tJGTS @for_in_range_exit%d", lab_num);
+      else
+        code("\n\t\tJLTS @for_in_range_exit%d", lab_num);
+
+      $<i>$ = lab_num;
+    }
+
+  maybe_lit _RPAREN statement
+
+    {
+
+      int idx = lookup_symbol($2,VAR|PAR|GLOB);
+      if(get_type(idx) == INT)
+        {
+          if($10 == -1)
+          {
+            if (atoi(get_name($6)) < atoi(get_name($8)))
+              {
+                code("\n\t\t%s\t", ar_instructions[ADD + (get_type(idx) - 1) * AROP_NUMBER]);
+                gen_sym_name(idx);
+                code(", $1, ");
+                gen_sym_name(idx);
+              }
+              else
+              {
+                code("\n\t\t%s\t", ar_instructions[SUB + (get_type(idx) - 1) * AROP_NUMBER]);
+                gen_sym_name(idx);
+                code(", $1, ");
+                gen_sym_name(idx);
+              }
+          }
+          else
+          {
+          if (atoi(get_name($6)) < atoi(get_name($8)))
+            {
+              code("\n\t\t%s\t", ar_instructions[ADD + (get_type(idx) - 1) * AROP_NUMBER]);
+              gen_sym_name(idx);
+              code(", $%d, ", atoi(get_name($10)));
+              gen_sym_name(idx);
+            }
+            else
+            {
+              code("\n\t\t%s\t", ar_instructions[SUB + (get_type(idx) - 1) * AROP_NUMBER]);
+              gen_sym_name(idx);
+              code(", $%d, ", atoi(get_name($10)));
+              gen_sym_name(idx);
+            }
+          }
+        }
+      code("\n\t\tJMP @for_in_range%d", $<i>9);
+      code("\n@for_in_range_exit%d:", $<i>9);
+    }
+  ;
+
+maybe_lit
+  : /**/
+      {
+        $$ = -1;
+      }
+  | _COMMA literal
+      {
+        $$ = atoi(get_name($2));
+      }
   ;
 postincrement_statement
   : _ID _PLUSPLUS _SEMICOLON
@@ -792,14 +886,14 @@ rel_exp
   : num_exp
     {
 
-            for (int i = 0; i < var_num_to_inc; i++) {
-              int idx = vars_to_inc[i];
-              code("\n\t\t%s ", ar_instructions[ADD + (get_type(idx) - 1) * AROP_NUMBER]);
-              gen_sym_name(idx);
-              code(", $1, ");
-              gen_sym_name(idx);
-            }
-            var_num_to_inc = 0;
+        for (int i = 0; i < var_num_to_inc; i++) {
+          int idx = vars_to_inc[i];
+          code("\n\t\t%s ", ar_instructions[ADD + (get_type(idx) - 1) * AROP_NUMBER]);
+          gen_sym_name(idx);
+          code(", $1, ");
+          gen_sym_name(idx);
+        }
+        var_num_to_inc = 0;
     }
    _RELOP num_exp
       {

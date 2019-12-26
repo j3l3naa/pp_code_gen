@@ -30,7 +30,14 @@ main:
 		CMPS 	-8(%14),$5
 		JGES @fordefexit20
 		ADDS	-8(%14), $1, -8(%14)
+		MOV 	$1,-12(%14)
+@fordef23:
+		CMPS 	-12(%14),$2
+		JGES @fordefexit23
+		ADDS	-12(%14), $1, -12(%14)
 		ADDS	y,$1,y
+		JMP @fordef23
+@fordefexit23:
 		JMP @fordef20
 @fordefexit20:
 		ADDS	-4(%14),y,%0
